@@ -1,5 +1,5 @@
 using FinancialReportTool.DataModels;
-namespace FinancialReportTool;
+namespace FinancialReportTool.Interfaces;
 public interface IQueryService
 {
     public QueryModel GetQuery(string[] args);

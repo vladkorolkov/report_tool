@@ -1,6 +1,6 @@
 using FinancialReportTool.DataModels;
 
-namespace FinancialReportTool;
+namespace FinancialReportTool.Interfaces;
 public interface IReportHandler
 {
     public ReportModel Edit(QueryModel query);

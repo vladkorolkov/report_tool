@@ -1,6 +1,6 @@
 using FinancialReportTool.DataModels;
 
-namespace FinancialReportTool;
+namespace FinancialReportTool.Interfaces;
 public interface IReportSaver
 {
     public void Save(ReportModel report);
