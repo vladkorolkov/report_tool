@@ -6,10 +6,10 @@ namespace FinancialReportTool.Services;
 public class ReportHandler : IReportHandler
 {
     private const int UnsedRowsNumber = 8;
-    public List<ReportModel> Edit(QueryModel query)
+    public List<ReportModel> Read (QueryModel query)
     {
         
-        //for free usage
+        //for free usage epplus lib
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
         var rootSheet = new ExcelPackage(query.Path).Workbook.Worksheets[1];
@@ -48,39 +48,7 @@ public class ReportHandler : IReportHandler
             result.Add(currentRow);
         }
 
-
-        var exPkg = new ExcelPackage($"{query.Artist}.xlsx");
-        
-        var sheet = exPkg.Workbook.Worksheets.Add("Отчет по прослушиваниям");
-
-        sheet.Cells["A1"].Value = "Трек";
-        sheet.Cells["B1"].Value = "Альбом";
-        sheet.Cells["C1"].Value = "Плошадка";
-        sheet.Cells["D1"].Value = "Прослушивания";
-        sheet.Cells["E1"].Value = "Территория";
-        sheet.Cells["F1"].Value = "Период";
-        sheet.Cells["G1"].Value = "Вознагрждение, руб.";
-        sheet.Cells["H1"].Value = "Итого, руб.";
-
-        var totalRows = result.Count();
-        decimal totalCashEarnded = 0;
-        for (int currentRow=2; currentRow <= totalRows; currentRow++)
-        {
-           
-                sheet.Cells[$"A{currentRow}"].Value = result[currentRow-2].Track;
-                sheet.Cells[$"B{currentRow}"].Value = result[currentRow-2].Album;
-                sheet.Cells[$"C{currentRow}"].Value = result[currentRow-2].Platform;
-                sheet.Cells[$"D{currentRow}"].Value = result[currentRow-2].Listens;
-                sheet.Cells[$"E{currentRow}"].Value = result[currentRow-2].Territory;
-                sheet.Cells[$"F{currentRow}"].Value = result[currentRow-2].Period;
-                sheet.Cells[$"G{currentRow}"].Value = result[currentRow-2].Total;
-                totalCashEarnded += result[currentRow-2].Total;
-            
-        }
-        sheet.Cells[$"H1"].Value = totalCashEarnded;
-
-        exPkg.Save();
-        return result;
+        return result;      
     }
 
     private double ParseDouble(string value)
@@ -96,5 +64,58 @@ public class ReportHandler : IReportHandler
         if(decimal.TryParse(value, out result))
             return result;
         return 0;
+    }
+
+    public bool Save(List<ReportModel> report, string artistName)
+    {
+        var path = $"{artistName}.xlsx";
+        string sheetName = "Отчет по прослушиваниям";
+        if(File.Exists(path))
+        {
+            File.Delete(path);
+        }
+        var exPkg = new ExcelPackage(path);
+        var sheet = exPkg.Workbook.Worksheets.Add(sheetName);
+
+        sheet.Cells["A1"].Value = "Трек";
+        sheet.Cells["B1"].Value = "Альбом";
+        sheet.Cells["C1"].Value = "Плошадка";
+        sheet.Cells["D1"].Value = "Прослушивания";
+        sheet.Cells["E1"].Value = "Территория";
+        sheet.Cells["F1"].Value = "Период";
+        sheet.Cells["G1"].Value = "Вознагрждение, руб.";
+        sheet.Cells["H1"].Value = "Итого, руб.";
+
+        var totalRows = report.Count();
+        decimal totalCashEarnded = 0;
+        for (int currentRow = 2; currentRow <= totalRows; currentRow++)
+        {
+            sheet.Cells[$"A{currentRow}"].Value = report[currentRow - 2].Track;
+            sheet.Cells[$"B{currentRow}"].Value = report[currentRow - 2].Album;
+            sheet.Cells[$"C{currentRow}"].Value = report[currentRow - 2].Platform;
+            sheet.Cells[$"D{currentRow}"].Value = report[currentRow - 2].Listens;
+            sheet.Cells[$"E{currentRow}"].Value = report[currentRow - 2].Territory;
+            sheet.Cells[$"F{currentRow}"].Value = report[currentRow - 2].Period;
+            sheet.Cells[$"G{currentRow}"].Value = report[currentRow - 2].Total;
+            totalCashEarnded += report[currentRow - 2].Total;
+        }
+        sheet.Cells[$"H1"].Value = totalCashEarnded;
+        try
+        {
+            exPkg.Save();
+        }
+        catch (Exception ex)
+        {
+            string logsPath = "logs.txt";      
+            using (StreamWriter sw = File.CreateText(logsPath))
+            {
+                sw.WriteLine(DateTime.Now);
+                sw.WriteLine(ex.Message);
+                sw.WriteLine("======================================");
+                sw.WriteLine(ex.StackTrace);
+            }
+            return false;
+        }
+        return true;
     }
 }
