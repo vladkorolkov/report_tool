@@ -1,7 +1,7 @@
 namespace FinancialReportTool.DataModels;
 public class ReportModel
 {
-    public int N { get; set; }
+    public int? N { get; set; }
     public string Period { get; set; }
     public string Platform { get; set; }
     public string TypeOfRights { get; set; }
