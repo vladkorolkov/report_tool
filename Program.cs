@@ -1,4 +1,5 @@
-﻿namespace FinancialReportTool;
+﻿using FinancialReportTool.Services;
+namespace FinancialReportTool;
 class Program
 {
     private static void Main(string[] args)
@@ -6,9 +7,7 @@ class Program
         try
         {
             var query = new QueryService(args).GetQuery();
-            Console.WriteLine($"First parameter: {query.Path}");
-            Console.WriteLine($"Second parameter: {query.Artist}");
-            var reportService = new Services.ReportHandler();
+            var reportService = new ReportHandler();
             var result = reportService.HandleReport(query);
             var saved = reportService.Save(result, query.Artist);
             if (saved)
@@ -19,12 +18,9 @@ class Program
         }
         catch (IndexOutOfRangeException ex)
         {
-            Console.WriteLine("Не указан один из обязательных параметров:\n1. Имя исходного файла отчета\n2. Имя артиста(название группы)\nПример:\nreportfile.xlsx Metallica\n\nЧтобы продолжить, закройте это окно и запустите программу снова.");
+            Console.WriteLine("Не указан один из обязательных параметров:\n1. Имя исходного файла отчета\n2. Имя артиста или название группы. Если название группы состоит из двух и более слов, укажите название в кавычках.\n\nПример:\nreportfile.xlsx Metallica\nreportfile.xlsx \"System of a Dowm\"\n\nЧтобы продолжить, закройте это окно и запустите программу снова.");
             Console.ReadLine();
             return;
         }
-
-
-
     }
 }
