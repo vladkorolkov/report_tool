@@ -70,13 +70,17 @@ public class ReportHandler : IReportHandler
 
     public bool Save(List<ReportModel> report, string artistName)
     {
-        var path = $"{artistName}.xlsx";
-        string sheetName = "Отчет по прослушиваниям";
+        
+        
+        var path = $"REPORTS/{artistName}.xlsx";
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        
         if (File.Exists(path))
         {
             File.Delete(path);
         }
         var exPkg = new ExcelPackage(path);
+        string sheetName = "Отчет по прослушиваниям";
         var sheet = exPkg.Workbook.Worksheets.Add(sheetName);
 
         sheet.Cells["A1"].Value = "Трек";
@@ -85,7 +89,7 @@ public class ReportHandler : IReportHandler
         sheet.Cells["D1"].Value = "Прослушивания";
         sheet.Cells["E1"].Value = "Территория";
         sheet.Cells["F1"].Value = "Период";
-        sheet.Cells["G1"].Value = "Вознагрждение, руб.";
+        sheet.Cells["G1"].Value = "Вознаграждение, руб.";
         sheet.Cells["H1"].Value = "Итого, руб.";
 
         var totalRows = report.Count();
@@ -102,6 +106,8 @@ public class ReportHandler : IReportHandler
             totalCashEarnded += report[currentRow - 2].Total;
         }
         sheet.Cells[$"H1"].Value = totalCashEarnded;
+        sheet.Cells["A1:H1"].Style.Font.Bold =true;
+        sheet.Cells[$"A2:G{totalRows}"].AutoFitColumns();
         try
         {
             exPkg.Save();
