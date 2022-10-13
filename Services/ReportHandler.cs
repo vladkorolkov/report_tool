@@ -5,23 +5,25 @@ using OfficeOpenXml;
 namespace FinancialReportTool.Services;
 public class ReportHandler : IReportHandler
 {
-    private const int UnsedRowsNumber = 8;
-    public List<ReportModel> Read (QueryModel query)
+    private const int UnsedRowsNumberFromTop = 5;
+    private const int UnsedRowsNumberFromBottom = 8;
+    private List<ReportModel> Read(QueryModel query)
     {
-        
         //for free usage epplus lib
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
         var rootSheet = new ExcelPackage(query.Path).Workbook.Worksheets[1];
-        rootSheet.DeleteRow(1, 5, true);
+        rootSheet.DeleteRow(1, UnsedRowsNumberFromTop);
+
         var allRowsCount = rootSheet.Dimension.Rows;
-        var rowsWithValues = allRowsCount - UnsedRowsNumber ;
+        var rowsWithValues = allRowsCount - UnsedRowsNumberFromBottom;
+
         var result = new List<ReportModel>();
         for (int currentRowNumber = 2; currentRowNumber < rowsWithValues; currentRowNumber++)
         {
             var currentRow = new ReportModel();
             //currentRow.N = int.Parse(rootSheet.Cells[$"A{currentRowNumber}"].Value?.ToString());
-            currentRow.Period = rootSheet.Cells[$"B{currentRowNumber}"].Value.ToString()??"";
+            currentRow.Period = rootSheet.Cells[$"B{currentRowNumber}"].Value.ToString() ?? "";
             currentRow.Platform = rootSheet.Cells[$"C{currentRowNumber}"].Value.ToString();
             currentRow.TypeOfRights = rootSheet.Cells[$"D{currentRowNumber}"].Value.ToString();
             currentRow.Territory = rootSheet.Cells[$"E{currentRowNumber}"].Value.ToString();
@@ -48,20 +50,20 @@ public class ReportHandler : IReportHandler
             result.Add(currentRow);
         }
 
-        return result;      
+        return result;
     }
 
     private double ParseDouble(string value)
     {
         double result;
-        if(double.TryParse(value, out result))       
-            return result;      
-        return 0;        
+        if (double.TryParse(value, out result))
+            return result;
+        return 0;
     }
     private decimal ParseDecimal(string value)
     {
         decimal result;
-        if(decimal.TryParse(value, out result))
+        if (decimal.TryParse(value, out result))
             return result;
         return 0;
     }
@@ -70,7 +72,7 @@ public class ReportHandler : IReportHandler
     {
         var path = $"{artistName}.xlsx";
         string sheetName = "Отчет по прослушиваниям";
-        if(File.Exists(path))
+        if (File.Exists(path))
         {
             File.Delete(path);
         }
@@ -106,7 +108,7 @@ public class ReportHandler : IReportHandler
         }
         catch (Exception ex)
         {
-            string logsPath = "logs.txt";      
+            string logsPath = "logs.txt";
             using (StreamWriter sw = File.CreateText(logsPath))
             {
                 sw.WriteLine(DateTime.Now);
@@ -117,5 +119,17 @@ public class ReportHandler : IReportHandler
             return false;
         }
         return true;
+    }
+
+    public List<ReportModel> HandleReport(QueryModel queryModel)
+    {
+        var reportInMemory = Read(queryModel);
+
+        var query = reportInMemory.AsQueryable();
+        if (!string.IsNullOrEmpty(queryModel.Artist))
+            query = query.Where(u => u.ArtistName == queryModel.Artist);
+
+        var filteredReport = query.ToList();
+        return filteredReport;
     }
 }

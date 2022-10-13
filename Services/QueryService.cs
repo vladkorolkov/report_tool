@@ -4,12 +4,8 @@ public class QueryService : IQueryService
 {
     private string[] _args;
     public QueryService(string[] args )
-    {       
-        _args = args[0]
-        .Split('-')
-        .Select(u => u.Trim())
-        .Where(u => !string.IsNullOrWhiteSpace(u))
-        .ToArray();
+    {  
+        _args = args;
     }
     public QueryModel GetQuery()
     {
